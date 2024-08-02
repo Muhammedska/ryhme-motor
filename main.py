@@ -27,9 +27,6 @@ def sozluk_ara(kelime):
 
 # Hata durumunda yapılacak işlemler (örneğin, yeniden deneme, kullanıcıya bildirme)
 
-# Kullanım örneği:
-sozluk_ara("aba")
-
 
 def word_insert_onefile():
     alphabet = "abcçdefghIİjklmnoöprsştuüvyz"
@@ -37,43 +34,45 @@ def word_insert_onefile():
     for i in alphabet:
         text = open('alfabe/' + i + '.txt', "r", encoding="UTF-8")
         main.write(text.read())
+        
+def word_miner():
+    w = open("all.txt", "r", encoding='utf-8').read().split('\n')
+    filtered_list = [item for item in w if item != ""]
+    xsa = len(w)
+    asd = 1
+    sesli_liste = ["a", "e", "ı", "i", "u", "ü", "o", "ö"]
+    grand_zamani = time.perf_counter()
+    for i in filtered_list:
+        baslangic_zamani = time.perf_counter()
+        sesliler = ""
+        for m in i:
+            if m.lower() in sesli_liste:
+                sesliler += m.lower()
+        hece = len(sesliler)
+        ms = sozluk_ara(i)
+        if isinstance(ms, list):
+            qw = ''
+            try:
+                if isinstance(ms[0]["anlamlarListe"][0]["anlam"], list):
+                    for s in ms[0]["anlamlarListe"][0]["anlam"]:
+                        qw += s
+                    text = qw
+                else:
+                    text = ms[0]["anlamlarListe"][0]["anlam"]
+                text = text.replace('► ', '')
+                bitis_zamani = time.perf_counter()
+                altime = (bitis_zamani - baslangic_zamani) * 1000
+                proctime = bitis_zamani - grand_zamani
+                stat = "[ " + str(int(altime)) + " / " + str(int(proctime)) + " ][ " + str(xsa) + ' / ' + str(
+                    asd) + " ]"
 
-w = open("all.txt","r",encoding='utf-8').read().split('\n')
-filtered_list = [item for item in w if item != ""]
-xsa  =len(w)
-asd = 1
-sesli_liste = ["a","e","ı","i","u","ü","o","ö"]
-grand_zamani = time.perf_counter()
-for i in filtered_list:
-    baslangic_zamani = time.perf_counter()
-    sesliler = ""
-    for m in i:
-        if m.lower() in sesli_liste:
-            sesliler+=m.lower()
-    hece = len(sesliler)
-    ms = sozluk_ara(i)
-    if isinstance(ms,list):
-        qw = ''
-        try:
-            if isinstance(ms[0]["anlamlarListe"][0]["anlam"],list):
-                for s in ms[0]["anlamlarListe"][0]["anlam"]:
-                    qw+=s
-                text = qw
-            else:
-                text = ms[0]["anlamlarListe"][0]["anlam"]
-            text = text.replace('► ','')
-            bitis_zamani = time.perf_counter()
-            altime = (bitis_zamani-baslangic_zamani)*1000
-            proctime = bitis_zamani-grand_zamani
-            stat = "[ "+str(int(altime))+" / "+str(int(proctime))+" ][ "+str(xsa)+' / '+str(asd)+" ]"
+                print(stat + "\n" + i + " :-: " + text)
+                asd += 1
+            except IndexError:
+                open('error.txt', 'r+', encoding="utf-8").write(i).close()
 
-            print(stat+"\n"+i+" :-: "+text)
-            asd+=1
-        except IndexError:
-            open('error.txt','a',encoding="utf-8").write(i).close()
-
-    else:
-        text = 'f'
-    cursor.execute("INSERT INTO kelime (kelime, sesli, anlam, hece) VALUES (?, ?, ?, ?)", (i, sesliler,text,hece))
-    conn.commit()
-conn.close()
+        else:
+            text = 'f'
+        cursor.execute("INSERT INTO kelime (kelime, sesli, anlam, hece) VALUES (?, ?, ?, ?)", (i, sesliler, text, hece))
+        conn.commit()
+    conn.close()
